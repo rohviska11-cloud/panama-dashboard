@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PANAMA POWER ANALYTICS · Electricity Demand & Weather Forecasting Dashboard</title>
-  <meta name="description" content="Dashboard analitik forecasting beban listrik nasional Panama per jam 2015–2020: SARIMAX, XGBoost, dan TimesFM 3.0.">
+  <meta name="description" content="Dashboard prediksi beban listrik nasional Panama per jam 2015–2020 dengan SARIMAX, XGBoost, dan TimesFM.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
@@ -16,383 +16,368 @@
 </head>
 <body>
 
-<div class="topbar">
-  <button class="btn btn-ghost" id="menuBtn" aria-label="Menu"><i class="bi bi-list"></i></button>
-  <div class="brand-title">PANAMA POWER ANALYTICS</div>
-</div>
-
-<aside class="sidebar" id="sidebar">
-  <div class="brand">
-    <div class="brand-logo"><i class="bi bi-lightning-charge-fill"></i></div>
-    <div><div class="brand-title">PANAMA POWER<br>ANALYTICS</div><div class="brand-sub">Demand & Weather · 2015–2020</div></div>
+<nav class="navbar navbar-expand-lg topnav">
+  <div class="container-fluid" style="max-width:1240px">
+    <a class="navbar-brand" href="#beranda"><span class="brand-logo"><i class="bi bi-lightning-charge-fill"></i></span>PANAMA POWER ANALYTICS</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-label="Menu"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav ms-auto gap-1" id="nav">
+        <li class="nav-item"><a class="nav-link" href="#beranda" data-page="beranda">Beranda</a></li>
+        <li class="nav-item"><a class="nav-link" href="#eksplorasi" data-page="eksplorasi">Eksplorasi Data</a></li>
+        <li class="nav-item"><a class="nav-link" href="#cuaca" data-page="cuaca">Cuaca</a></li>
+        <li class="nav-item"><a class="nav-link" href="#performa" data-page="performa">Performa Model</a></li>
+        <li class="nav-item"><a class="nav-link" href="#cara-kerja" data-page="cara-kerja">Cara Kerja Model</a></li>
+        <li class="nav-item"><a class="nav-link" href="#prediksi" data-page="prediksi">Prediksi 24 Jam</a></li>
+        <li class="nav-item"><a class="nav-link" href="#simulasi" data-page="simulasi">Simulasi</a></li>
+      </ul>
+    </div>
   </div>
-  <ul class="nav-list" id="nav">
-    <div class="nav-indicator" id="navInd"></div>
-    <li><a href="#overview" data-page="overview"><i class="bi bi-house"></i>Overview</a></li>
-    <li><a href="#exploration" data-page="exploration"><i class="bi bi-graph-up"></i>Data Exploration</a></li>
-    <li><a href="#weather" data-page="weather"><i class="bi bi-cloud-sun"></i>Weather Analysis</a></li>
-    <li><a href="#performance" data-page="performance"><i class="bi bi-trophy"></i>Model Performance</a></li>
-    <li><a href="#explanation" data-page="explanation"><i class="bi bi-mortarboard"></i>Model Explanation</a></li>
-    <li><a href="#forecast" data-page="forecast"><i class="bi bi-lightning"></i>Load Forecasting</a></li>
-    <li><a href="#simulation" data-page="simulation"><i class="bi bi-sliders"></i>Scenario Simulation</a></li>
-  </ul>
-  <div class="sidebar-foot">Data: beban listrik nasional Panama + cuaca tiga wilayah (per jam).<br>Data dibangun: <span id="genTime">–</span></div>
-</aside>
+</nav>
 
 <main>
-<!-- ======================= 1. OVERVIEW ======================= -->
-<section class="page" id="page-overview">
+<!-- ======================= BERANDA ======================= -->
+<section class="page" id="page-beranda">
   <div class="hero">
     <svg class="hero-svg" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true">
       <defs>
-        <linearGradient id="gradLine" x1="0" x2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset=".6" stop-color="#22d3ee"/><stop offset="1" stop-color="#f59e0b"/></linearGradient>
-        <linearGradient id="gradArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="rgba(34,211,238,.25)"/><stop offset="1" stop-color="rgba(34,211,238,0)"/></linearGradient>
+        <linearGradient id="gradLine" x1="0" x2="1"><stop offset="0" stop-color="#1e3a8a"/><stop offset=".6" stop-color="#0891b2"/><stop offset="1" stop-color="#f59e0b"/></linearGradient>
+        <linearGradient id="gradArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="rgba(8,145,178,.18)"/><stop offset="1" stop-color="rgba(8,145,178,0)"/></linearGradient>
       </defs>
-      <g id="heroGrid"></g>
       <path id="heroArea" class="load-area"/>
       <path id="heroLine" class="load-line"/>
-      <circle r="4" class="spark"><animateMotion dur="6s" repeatCount="indefinite"><mpath href="#heroLine"/></animateMotion></circle>
+      <circle r="5" class="spark"><animateMotion dur="7s" repeatCount="indefinite"><mpath href="#heroLine"/></animateMotion></circle>
     </svg>
     <div class="hero-content">
-      <div class="page-head mb-0"><div class="eyebrow"><i class="bi bi-lightning-charge"></i> Research Dashboard</div></div>
       <h1>PANAMA POWER ANALYTICS</h1>
-      <div class="fw-semibold mb-2" style="color:#9be9ff">Electricity Demand & Weather Forecasting Dashboard (2015–2020)</div>
-      <p class="lead">Peramalan beban listrik nasional Panama 24 jam ke depan, per jam. Ramalan cuaca dari tiga wilayah (BAB I) dipakai sebagai input skenario untuk model beban (BAB II). Model yang dibandingkan: SARIMAX, XGBoost, dan foundation model TimesFM 3.0.</p>
+      <div class="tagline">Electricity Demand & Weather Forecasting Dashboard (2015–2020)</div>
+      <p class="lead">Berapa kebutuhan listrik Panama dalam 24 jam ke depan? Dashboard ini menampilkan pola pemakaian listrik nasional Panama, pengaruh cuaca, dan hasil prediksi per jam dari tiga model.</p>
       <div class="chips">
         <span class="chip"><i class="bi bi-calendar3"></i><span id="chipPeriod">2015–2020</span></span>
-        <span class="chip"><i class="bi bi-clock"></i>Frekuensi: Hourly</span>
-        <span class="chip"><i class="bi bi-geo-alt"></i>Lokasi: Panama</span>
-        <span class="chip"><i class="bi bi-bullseye"></i>Target: National Electricity Demand (nat_demand)</span>
+        <span class="chip"><i class="bi bi-clock"></i>Data per jam</span>
+        <span class="chip"><i class="bi bi-geo-alt"></i>Panama</span>
+        <span class="chip"><i class="bi bi-bullseye"></i>Target: beban listrik nasional</span>
       </div>
+      <div class="mt-4 d-flex gap-2 flex-wrap"><a href="#prediksi" class="btn btn-cyan"><i class="bi bi-lightning-charge"></i> Lihat prediksi 24 jam</a><a href="#eksplorasi" class="btn btn-ghost">Jelajahi data</a></div>
     </div>
   </div>
 
-  <div class="section-title">Indikator dataset <span class="tag">LIVE DATA</span></div>
+  <div class="section-title">Sekilas data</div>
   <div class="row g-3" id="kpiOverview"></div>
 
-  <div class="section-title">Ringkasan penelitian</div>
-  <div class="row g-3">
-    <div class="col-lg-6"><div class="card-x">
-      <h3><i class="bi bi-cloud-sun text-info"></i> BAB I · Weather Forecasting</h3>
-      <div class="sub">12 variabel cuaca (suhu, kelembapan, presipitasi, angin) × 3 wilayah, horizon 1–24 jam.</div>
-      <div class="d-flex gap-2 flex-wrap"><span class="chip">SARIMAX</span><span class="chip">XGBoost</span></div>
-      <div class="mt-3 small text-muted2" id="ovWeatherSel"></div>
-    </div></div>
-    <div class="col-lg-6"><div class="card-x">
-      <h3><i class="bi bi-lightning-charge text-warning"></i> BAB II · Electricity Load Forecasting</h3>
-      <div class="sub">nat_demand, 24 jam direct multi-step, skenario tanpa cuaca / ramalan cuaca / cuaca aktual (oracle).</div>
-      <div class="d-flex gap-2 flex-wrap"><span class="chip">SARIMAX</span><span class="chip">XGBoost</span><span class="chip">TimesFM 3.0</span></div>
-      <div class="mt-3 small text-muted2" id="ovLoadSel"></div>
-    </div></div>
-  </div>
-  <div class="card-x mt-3">
+  <div class="section-title">Alur penelitian</div>
+  <p class="section-desc">Penelitian dilakukan dalam dua tahap: memprediksi cuaca, lalu memakai prediksi cuaca itu untuk memprediksi beban listrik.</p>
+  <div class="card-x">
     <div class="flow">
-      <div class="flow-step"><i class="bi bi-database"></i><div class="t">Historical Weather</div><div class="d">3 wilayah, 2015–2020</div></div>
+      <div class="flow-step"><i class="bi bi-database"></i><div class="t">Data cuaca</div><div class="d">3 wilayah, 2015–2020</div></div>
       <div class="flow-arrow"></div>
-      <div class="flow-step"><i class="bi bi-cpu"></i><div class="t">Weather Forecasting</div><div class="d">SARIMAX · XGBoost</div></div>
+      <div class="flow-step"><i class="bi bi-cloud-sun"></i><div class="t">Prediksi cuaca</div><div class="d">SARIMAX · XGBoost</div></div>
       <div class="flow-arrow"></div>
-      <div class="flow-step"><i class="bi bi-cloud-haze2"></i><div class="t">Predicted Weather</div><div class="d">12 variabel, 24 jam</div></div>
+      <div class="flow-step"><i class="bi bi-cloud-haze2"></i><div class="t">Cuaca 24 jam ke depan</div><div class="d">suhu, kelembapan, hujan, angin</div></div>
       <div class="flow-arrow"></div>
-      <div class="flow-step"><i class="bi bi-diagram-3"></i><div class="t">Load Forecasting</div><div class="d">SARIMAX · XGBoost · TimesFM</div></div>
+      <div class="flow-step"><i class="bi bi-diagram-3"></i><div class="t">Prediksi beban listrik</div><div class="d">SARIMAX · XGBoost · TimesFM</div></div>
       <div class="flow-arrow"></div>
-      <div class="flow-step"><i class="bi bi-lightning-charge-fill" style="color:var(--orange)"></i><div class="t">24-Hour Load Forecast</div><div class="d">+ interval 80%</div></div>
+      <div class="flow-step"><i class="bi bi-lightning-charge-fill" style="color:var(--orange)"></i><div class="t">Prediksi 24 jam</div><div class="d">dengan rentang perkiraan</div></div>
     </div>
   </div>
+  <div class="row g-3 mt-0">
+    <div class="col-lg-6"><div class="card-x"><h3><i class="bi bi-cloud-sun text-info"></i> Prediksi cuaca</h3>
+      <div class="sub">12 variabel cuaca (suhu, kelembapan, hujan, angin) di Tocumen, Santiago, dan David.</div><div id="ovWeatherSel"></div></div></div>
+    <div class="col-lg-6"><div class="card-x"><h3><i class="bi bi-lightning-charge text-warning"></i> Prediksi beban listrik</h3>
+      <div class="sub">Beban listrik nasional per jam, 24 jam ke depan, dibandingkan antara tanpa dan dengan informasi cuaca.</div><div id="ovLoadSel"></div></div></div>
+  </div>
 
-  <div class="section-title">Highlight hasil model <span class="tag">DARI EVALUASI</span></div>
+  <div class="section-title">Hasil utama</div>
+  <p class="section-desc">Model terbaik dipilih dari ketepatan prediksi pada data tahun 2019, lalu diuji ulang pada data Januari–Juni 2020.</p>
   <div class="row g-3" id="ovHighlight"></div>
 </section>
 
-<!-- ======================= 2. EXPLORATION ======================= -->
-<section class="page" id="page-exploration">
-  <div class="page-head"><div class="eyebrow">Halaman 2</div><h1>Data Exploration</h1><p>Karakteristik historis beban listrik nasional Panama: tren, pola harian/mingguan/bulanan, dan distribusi.</p></div>
+<!-- ======================= EKSPLORASI ======================= -->
+<section class="page" id="page-eksplorasi">
+  <div class="page-head"><h1>Eksplorasi Data</h1><p>Bagaimana pemakaian listrik nasional Panama berubah dari jam ke jam, hari ke hari, dan bulan ke bulan.</p></div>
 
-  <div class="section-title">A · Historical electricity demand</div>
+  <div class="section-title">Beban listrik dari waktu ke waktu</div>
+  <p class="section-desc">Geser slider di bawah grafik atau pilih rentang waktu untuk memperbesar periode tertentu.</p>
   <div class="card-x">
     <div class="controls">
       <div><label>Tahun</label><select class="form-select form-select-sm" id="exYear"></select></div>
       <div><label>Bulan</label><select class="form-select form-select-sm" id="exMonth"></select></div>
-      <div><label>Dari</label><input type="date" class="form-control form-control-sm" id="exFrom"></div>
-      <div><label>Sampai</label><input type="date" class="form-control form-control-sm" id="exTo"></div>
+      <div><label>Dari tanggal</label><input type="date" class="form-control form-control-sm" id="exFrom"></div>
+      <div><label>Sampai tanggal</label><input type="date" class="form-control form-control-sm" id="exTo"></div>
       <div><button class="btn btn-sm btn-cyan" id="exApply"><i class="bi bi-funnel"></i> Terapkan</button> <button class="btn btn-sm btn-ghost" id="exReset">Reset</button></div>
     </div>
     <div id="chTs" class="chart lg skeleton"></div>
   </div>
 
-  <div class="section-title">B · Hourly load pattern</div>
+  <div class="section-title">Pola dalam sehari</div>
   <div class="row g-3">
-    <div class="col-lg-8"><div class="card-x"><div id="chHourly" class="chart skeleton"></div></div></div>
+    <div class="col-lg-8"><div class="card-x"><h3>Rata-rata beban per jam</h3><div id="chHourly" class="chart skeleton"></div></div></div>
     <div class="col-lg-4"><div class="row g-3" id="kpiHourly"></div></div>
   </div>
 
-  <div class="section-title">C · Daily & monthly pattern</div>
+  <div class="section-title">Pola mingguan dan bulanan</div>
   <div class="row g-3">
-    <div class="col-lg-6"><div class="card-x"><h3>Rata-rata per hari dalam seminggu</h3><div id="chDow" class="chart sm skeleton"></div></div></div>
-    <div class="col-lg-6"><div class="card-x"><h3>Hari kerja vs akhir pekan (profil per jam)</h3><div id="chWdWe" class="chart sm skeleton"></div></div></div>
-    <div class="col-lg-6"><div class="card-x"><h3>Heatmap hari × jam</h3><div id="chHeat" class="chart skeleton"></div></div></div>
-    <div class="col-lg-6"><div class="card-x"><h3>Boxplot per bulan</h3><div id="chBoxMonth" class="chart skeleton"></div></div></div>
+    <div class="col-lg-6"><div class="card-x"><h3>Rata-rata per hari</h3><div id="chDow" class="chart sm skeleton"></div></div></div>
+    <div class="col-lg-6"><div class="card-x"><h3>Hari kerja vs akhir pekan</h3><div id="chWdWe" class="chart sm skeleton"></div></div></div>
+    <div class="col-lg-6"><div class="card-x"><h3>Peta panas hari × jam</h3><div class="sub">Warna makin terang = beban makin tinggi.</div><div id="chHeat" class="chart skeleton"></div></div></div>
+    <div class="col-lg-6"><div class="card-x"><h3>Sebaran beban per bulan</h3><div class="sub">Kotak = 50% nilai tengah, garis = median.</div><div id="chBoxMonth" class="chart skeleton"></div></div></div>
   </div>
 
-  <div class="section-title">D · Load distribution</div>
+  <div class="section-title">Sebaran nilai beban</div>
   <div class="row g-3" id="kpiStats"></div>
   <div class="row g-3 mt-0">
-    <div class="col-lg-8"><div class="card-x"><h3>Histogram & density</h3><div id="chHist" class="chart skeleton"></div></div></div>
-    <div class="col-lg-4"><div class="card-x"><h3>Boxplot keseluruhan</h3><div id="chBoxAll" class="chart skeleton"></div></div></div>
+    <div class="col-lg-8"><div class="card-x"><h3>Histogram dan kurva kepadatan</h3><div id="chHist" class="chart skeleton"></div></div></div>
+    <div class="col-lg-4"><div class="card-x"><h3>Boxplot</h3><div id="chBoxAll" class="chart skeleton"></div></div></div>
   </div>
 
-  <div class="section-title">E · Insight otomatis <span class="tag">DIHITUNG DARI DATA</span></div>
+  <div class="section-title">Temuan utama</div>
+  <p class="section-desc">Dihitung otomatis dari data.</p>
   <div class="card-x"><ul class="insights" id="exInsights"></ul></div>
 </section>
 
-<!-- ======================= 3. WEATHER ======================= -->
-<section class="page" id="page-weather">
-  <div class="page-head"><div class="eyebrow">Halaman 3</div><h1>Weather Analysis</h1><p>Karakteristik cuaca di Tocumen, Santiago, dan David serta hubungannya dengan beban listrik nasional.</p></div>
+<!-- ======================= CUACA ======================= -->
+<section class="page" id="page-cuaca">
+  <div class="page-head"><h1>Cuaca</h1><p>Kondisi cuaca di tiga wilayah (Tocumen, Santiago, David) dan hubungannya dengan pemakaian listrik.</p></div>
   <div class="row g-3">
-    <div class="col-lg-5"><div class="card-x"><h3>Lokasi tiga wilayah cuaca</h3><div class="sub">Koordinat perkiraan pusat kota.</div><div id="map"></div></div></div>
+    <div class="col-lg-5"><div class="card-x"><h3>Lokasi pengamatan</h3><div class="sub">Titik menunjukkan perkiraan lokasi kota.</div><div id="map"></div></div></div>
     <div class="col-lg-7"><div class="row g-3" id="kpiWeather"></div></div>
   </div>
 
-  <div class="section-title">B · Temperature analysis</div>
-  <div class="card-x"><h3>Tren suhu harian (T2M, rata-rata harian)</h3><div id="chTemp" class="chart skeleton"></div></div>
+  <div class="section-title">Suhu</div>
+  <div class="card-x"><h3>Suhu rata-rata harian</h3><div id="chTemp" class="chart skeleton"></div></div>
   <div class="row g-3 mt-0">
-    <div class="col-lg-6"><div class="card-x"><h3>Pola suhu per jam</h3><div id="chTempHour" class="chart sm skeleton"></div></div></div>
-    <div class="col-lg-6"><div class="card-x"><h3>Pola suhu bulanan</h3><div id="chTempMonth" class="chart sm skeleton"></div></div></div>
+    <div class="col-lg-6"><div class="card-x"><h3>Suhu rata-rata per jam</h3><div id="chTempHour" class="chart sm skeleton"></div></div></div>
+    <div class="col-lg-6"><div class="card-x"><h3>Suhu rata-rata per bulan</h3><div id="chTempMonth" class="chart sm skeleton"></div></div></div>
   </div>
 
-  <div class="section-title">C · Humidity, precipitation & wind</div>
+  <div class="section-title">Kelembapan, hujan, dan angin</div>
   <div class="card-x">
-    <div class="controls"><div><label>Variabel</label><select class="form-select form-select-sm" id="wxVar">
-      <option value="QV2M">QV2M · kelembapan</option><option value="TQL">TQL · presipitasi cair</option><option value="W2M">W2M · kecepatan angin</option><option value="T2M">T2M · suhu</option></select></div>
-      <div class="small text-muted2 ms-2" id="wxUnit"></div></div>
+    <div class="controls"><div><label>Pilih variabel</label><select class="form-select form-select-sm" id="wxVar">
+      <option value="QV2M">Kelembapan</option><option value="TQL">Hujan (presipitasi cair)</option><option value="W2M">Kecepatan angin</option><option value="T2M">Suhu</option></select></div>
+      <div class="small text-muted2" id="wxUnit"></div></div>
     <div class="row g-3">
       <div class="col-lg-8"><div id="chWxTrend" class="chart skeleton"></div></div>
       <div class="col-lg-4"><div id="chWxDist" class="chart skeleton"></div></div>
     </div>
   </div>
 
-  <div class="section-title">D · Weather vs electricity demand</div>
+  <div class="section-title">Cuaca vs beban listrik</div>
+  <p class="section-desc">Setiap titik adalah satu jam. Angka korelasi mendekati 1 atau −1 berarti hubungan kuat; mendekati 0 berarti lemah.</p>
   <div class="card-x">
     <div class="controls">
       <div><label>Variabel cuaca</label><select class="form-select form-select-sm" id="scVar"></select></div>
-      <div><label>Warna titik</label><select class="form-select form-select-sm" id="scColor"><option value="hour">Jam</option><option value="none">Polos</option></select></div>
+      <div><label>Warna titik</label><select class="form-select form-select-sm" id="scColor"><option value="hour">Menurut jam</option><option value="none">Satu warna</option></select></div>
       <div class="d-flex gap-2" id="scStats"></div>
     </div>
     <div id="chScatter" class="chart lg skeleton"></div>
-    <div class="small text-muted2">Plot memakai 4.000 jam sampel acak. Koefisien Pearson/Spearman dihitung dari seluruh 48.048 jam.</div>
+    <div class="small text-muted2">Grafik menampilkan 4.000 jam acak agar ringan; angka korelasi dihitung dari seluruh data.</div>
   </div>
 
-  <div class="section-title">E · Weather correlation</div>
+  <div class="section-title">Korelasi semua variabel</div>
   <div class="row g-3">
     <div class="col-lg-7"><div class="card-x">
-      <div class="controls"><div class="btn-group" role="group"><button class="btn btn-sm btn-ghost active" data-corr="pearson">Pearson</button><button class="btn btn-sm btn-ghost" data-corr="spearman">Spearman</button></div></div>
+      <div class="controls"><div class="btn-group"><button class="btn btn-sm btn-ghost active" data-corr="pearson">Pearson</button><button class="btn btn-sm btn-ghost" data-corr="spearman">Spearman</button></div></div>
       <div id="chCorr" class="chart lg skeleton"></div></div></div>
-    <div class="col-lg-5"><div class="card-x"><h3>Interpretasi otomatis</h3>
+    <div class="col-lg-5"><div class="card-x"><h3>Cara membaca</h3>
       <ul class="insights" id="corrInsights"></ul>
-      <div class="callout mt-3"><i class="bi bi-exclamation-triangle"></i> Korelasi <b>tidak</b> menunjukkan hubungan sebab-akibat. Suhu dan beban sama-sama mengikuti siklus harian, sehingga korelasi per jam sebagian mencerminkan jam dalam sehari, bukan efek cuaca langsung.</div>
+      <div class="callout mt-3"><i class="bi bi-exclamation-triangle"></i> Korelasi tidak sama dengan sebab-akibat. Suhu dan pemakaian listrik sama-sama naik pada siang hari, sehingga keduanya tampak berhubungan walaupun penyebab utamanya adalah aktivitas harian.</div>
     </div></div>
   </div>
 
-  <div class="section-title">F · Insight</div>
+  <div class="section-title">Temuan utama</div>
   <div class="card-x"><ul class="insights" id="wxInsights"></ul></div>
 </section>
 
-<!-- ======================= 4. PERFORMANCE ======================= -->
-<section class="page" id="page-performance">
-  <div class="page-head"><div class="eyebrow">Halaman 4</div><h1>Model Performance</h1><p>Evaluasi rolling-origin (origin harian 23:00, horizon 24 jam). Training s.d. 2018, validasi 2019, test Jan–Jun 2020.</p></div>
+<!-- ======================= PERFORMA ======================= -->
+<section class="page" id="page-performa">
+  <div class="page-head"><h1>Performa Model</h1><p>Seberapa tepat setiap model? Model dilatih dengan data 2015–2018, dipilih dengan data 2019, lalu diuji pada Januari–Juni 2020.</p></div>
   <ul class="nav nav-pills mb-3 gap-2" id="perfTabs">
-    <li class="nav-item"><button class="nav-link active" data-tab="pw">A · Weather forecasting</button></li>
-    <li class="nav-item"><button class="nav-link" data-tab="pl">B · Load forecasting</button></li>
-    <li class="nav-item"><button class="nav-link" data-tab="ps">C · Model selection</button></li>
-    <li class="nav-item"><button class="nav-link" data-tab="pi">D · XGBoost feature importance</button></li>
+    <li class="nav-item"><button class="nav-link active" data-tab="pl">Prediksi beban listrik</button></li>
+    <li class="nav-item"><button class="nav-link" data-tab="ps">Model terbaik</button></li>
+    <li class="nav-item"><button class="nav-link" data-tab="pw">Prediksi cuaca</button></li>
+    <li class="nav-item"><button class="nav-link" data-tab="pi">Faktor penting XGBoost</button></li>
   </ul>
+  <div class="callout info mb-3"><i class="bi bi-info-circle"></i> <b>MAE</b> = rata-rata selisih prediksi dengan nilai sebenarnya; <b>RMSE</b> = mirip MAE tetapi lebih menghukum selisih besar. Makin kecil, makin tepat.</div>
 
-  <div class="ptab" id="tab-pw">
+  <div class="ptab" id="tab-pl">
     <div class="card-x">
-      <div class="controls"><div><label>Variabel cuaca</label><select class="form-select form-select-sm" id="pwVar"></select></div><div class="small text-muted2" id="pwSel"></div></div>
-      <div class="table-wrap"><table class="table-x" id="pwTable"></table></div>
-    </div>
-    <div class="row g-3 mt-0">
-      <div class="col-lg-6"><div class="card-x"><h3>MAE per himpunan</h3><div id="chPwMae" class="chart sm skeleton"></div></div></div>
-      <div class="col-lg-6"><div class="card-x"><h3>Test RMSE & MASE</h3><div id="chPwRmse" class="chart sm skeleton"></div></div></div>
-      <div class="col-12"><div class="card-x"><h3>Actual vs predicted (test 2020)</h3><div id="chPwTs" class="chart skeleton"></div></div></div>
-      <div class="col-lg-6"><div class="card-x"><h3>Error per horizon (MAE)</h3><div id="chPwH" class="chart sm skeleton"></div></div></div>
-      <div class="col-lg-6"><div class="card-x"><h3>Test MASE seluruh variabel</h3><div class="sub">MASE &lt; 1 = lebih baik daripada naive musiman.</div><div id="chPwMase" class="chart sm skeleton"></div></div></div>
-    </div>
-  </div>
-
-  <div class="ptab d-none" id="tab-pl">
-    <div class="card-x">
-      <div class="controls"><div><label>Skenario ditampilkan</label>
-        <div class="d-flex gap-3" id="plScen"></div></div></div>
+      <div class="controls"><div><label>Tampilkan percobaan</label><div class="d-flex gap-3 flex-wrap" id="plScen"></div></div></div>
       <div class="table-wrap"><table class="table-x" id="plTable"></table></div>
-      <div class="small text-muted2 mt-2">A = tanpa cuaca · B = ramalan cuaca BAB I (operasional) · C = cuaca aktual (oracle, hanya pembanding). Train MAE (fit) = galat in-sample, bukan dasar pemilihan.</div>
     </div>
     <div class="row g-3 mt-0">
-      <div class="col-lg-6"><div class="card-x"><h3>MAE validasi & test</h3><div id="chPlMae" class="chart sm skeleton"></div></div></div>
-      <div class="col-lg-6"><div class="card-x"><h3>RMSE validasi & test</h3><div id="chPlRmse" class="chart sm skeleton"></div></div></div>
+      <div class="col-lg-6"><div class="card-x"><h3>MAE (MWh)</h3><div id="chPlMae" class="chart sm skeleton"></div></div></div>
+      <div class="col-lg-6"><div class="card-x"><h3>RMSE (MWh)</h3><div id="chPlRmse" class="chart sm skeleton"></div></div></div>
       <div class="col-12"><div class="card-x">
+        <h3>Nilai sebenarnya vs prediksi</h3>
         <div class="controls">
           <div><label>Model</label><select class="form-select form-select-sm" id="plModel"><option>TimesFM</option><option>XGBoost</option><option>SARIMAX</option></select></div>
-          <div><label>Skenario</label><select class="form-select form-select-sm" id="plSc"><option value="A">A</option><option value="B">B</option><option value="C">C</option></select></div>
-          <div><label>Himpunan</label><select class="form-select form-select-sm" id="plSet"><option value="test">Test 2020</option><option value="validation">Validasi 2019</option></select></div>
+          <div><label>Percobaan</label><select class="form-select form-select-sm" id="plSc"></select></div>
+          <div><label>Periode</label><select class="form-select form-select-sm" id="plSet"><option value="test">Jan–Jun 2020 (uji)</option><option value="validation">2019 (pemilihan)</option></select></div>
         </div>
-        <h3>Actual vs predicted</h3><div id="chPlTs" class="chart lg skeleton"></div>
+        <div id="chPlTs" class="chart lg skeleton"></div>
       </div></div>
-      <div class="col-lg-7"><div class="card-x"><h3>Residual (actual − predicted)</h3><div id="chPlRes" class="chart sm skeleton"></div></div></div>
-      <div class="col-lg-5"><div class="card-x"><h3>Distribusi residual</h3><div id="chPlResH" class="chart sm skeleton"></div></div></div>
-      <div class="col-lg-6"><div class="card-x"><h3>Error per horizon (MAE)</h3><div id="chPlH" class="chart sm skeleton"></div></div></div>
-      <div class="col-lg-6"><div class="card-x"><h3>Train rolling vs validasi vs test</h3><div id="chPlOvf" class="chart sm skeleton"></div></div></div>
+      <div class="col-lg-7"><div class="card-x"><h3>Selisih (sebenarnya − prediksi)</h3><div id="chPlRes" class="chart sm skeleton"></div></div></div>
+      <div class="col-lg-5"><div class="card-x"><h3>Sebaran selisih</h3><div id="chPlResH" class="chart sm skeleton"></div></div></div>
+      <div class="col-lg-6"><div class="card-x"><h3>Ketepatan per jam ke depan</h3><div class="sub">Jam ke-1 sampai ke-24 setelah waktu prediksi dibuat.</div><div id="chPlH" class="chart sm skeleton"></div></div></div>
+      <div class="col-lg-6"><div class="card-x"><h3>Data latih vs 2019 vs 2020</h3><div class="sub">Selisih besar antara batang bisa menandakan model terlalu menghafal data latih.</div><div id="chPlOvf" class="chart sm skeleton"></div></div></div>
     </div>
   </div>
 
   <div class="ptab d-none" id="tab-ps">
     <div class="row g-3" id="psCards"></div>
     <div class="row g-3 mt-0">
-      <div class="col-12"><div class="card-x"><h3>Kriteria pemilihan (skenario operasional A/B)</h3><div class="table-wrap"><table class="table-x" id="psTable"></table></div></div></div>
-      <div class="col-lg-6"><div class="card-x"><h3>Stabilitas: test pra-COVID vs periode penurunan</h3><div id="chPsSub" class="chart sm skeleton"></div></div></div>
-      <div class="col-lg-6"><div class="card-x"><h3>Uji Diebold–Mariano</h3><div class="sub">Selisih MAE harian (negatif = model pertama lebih akurat), HAC Newey–West lag 7.</div><div class="table-wrap"><table class="table-x" id="psDm"></table></div></div></div>
-      <div class="col-lg-6"><div class="card-x"><h3>Beban puncak harian</h3><div class="table-wrap"><table class="table-x" id="psPeak"></table></div></div></div>
-      <div class="col-lg-6"><div class="card-x"><h3>Cakupan interval prediksi 80%</h3><div class="table-wrap"><table class="table-x" id="psCov"></table></div></div></div>
+      <div class="col-12"><div class="card-x"><h3>Perbandingan lengkap</h3><div class="table-wrap"><table class="table-x" id="psTable"></table></div></div></div>
+      <div class="col-lg-6"><div class="card-x"><h3>Sebelum vs saat penurunan beban COVID-19 (2020)</h3><div id="chPsSub" class="chart sm skeleton"></div></div></div>
+      <div class="col-lg-6"><div class="card-x"><h3>Apakah selisih akurasinya nyata?</h3><div class="sub">Uji statistik Diebold–Mariano. "Ya" berarti perbedaan ketepatan kedua model bukan kebetulan.</div><div class="table-wrap"><table class="table-x" id="psDm"></table></div></div></div>
+      <div class="col-lg-6"><div class="card-x"><h3>Ketepatan memprediksi beban puncak harian</h3><div class="table-wrap"><table class="table-x" id="psPeak"></table></div></div></div>
+      <div class="col-lg-6"><div class="card-x"><h3>Rentang perkiraan 80%</h3><div class="sub">Idealnya sekitar 80% nilai sebenarnya jatuh di dalam rentang.</div><div class="table-wrap"><table class="table-x" id="psCov"></table></div></div></div>
+    </div>
+  </div>
+
+  <div class="ptab d-none" id="tab-pw">
+    <div class="card-x">
+      <div class="controls"><div><label>Variabel cuaca</label><select class="form-select form-select-sm" id="pwVar"></select></div><div class="small text-muted2" id="pwSel"></div></div>
+      <div class="table-wrap"><table class="table-x" id="pwTable"></table></div>
+    </div>
+    <div class="row g-3 mt-0">
+      <div class="col-lg-6"><div class="card-x"><h3>MAE per periode</h3><div id="chPwMae" class="chart sm skeleton"></div></div></div>
+      <div class="col-lg-6"><div class="card-x"><h3>Ketepatan per jam ke depan</h3><div id="chPwH" class="chart sm skeleton"></div></div></div>
+      <div class="col-12"><div class="card-x"><h3>Nilai sebenarnya vs prediksi (Jan–Jun 2020)</h3><div id="chPwTs" class="chart skeleton"></div></div></div>
+      <div class="col-12"><div class="card-x"><h3>Perbandingan semua variabel</h3><div class="sub">MASE di bawah 1 (garis merah) berarti model lebih baik daripada cara sederhana "sama dengan kemarin".</div><div id="chPwMase" class="chart sm skeleton"></div></div></div>
     </div>
   </div>
 
   <div class="ptab d-none" id="tab-pi">
     <div class="card-x">
       <div class="controls">
-        <div><label>Model XGBoost</label><select class="form-select form-select-sm" id="piModel"><option value="XGB_W">XGBoost-W (dengan cuaca, set c)</option><option value="XGB_A">XGBoost-A (tanpa cuaca)</option></select></div>
-        <div><label>Metode</label><select class="form-select form-select-sm" id="piMethod"><option value="gain">Gain (rata-rata 24 horizon)</option><option value="gain_h">Gain per horizon</option><option value="shap">SHAP mean |kontribusi|</option></select></div>
-        <div><label>Horizon</label><select class="form-select form-select-sm" id="piH"></select></div>
+        <div><label>Model</label><select class="form-select form-select-sm" id="piModel"><option value="XGB_W">XGBoost dengan cuaca</option><option value="XGB_A">XGBoost tanpa cuaca</option></select></div>
+        <div><label>Cara mengukur</label><select class="form-select form-select-sm" id="piMethod"><option value="gain">Gain (rata-rata semua jam)</option><option value="gain_h">Gain per jam ke depan</option><option value="shap">SHAP (dalam MWh)</option></select></div>
+        <div><label>Jam ke depan</label><select class="form-select form-select-sm" id="piH"></select></div>
       </div>
       <div class="row g-3"><div class="col-lg-8"><div id="chImp" class="chart lg skeleton"></div></div>
-        <div class="col-lg-4"><h3>Ranking fitur</h3><div class="table-wrap" style="max-height:420px"><table class="table-x" id="piTable"></table></div></div></div>
-      <div class="small text-muted2 mt-2" id="piNote"></div>
+        <div class="col-lg-4"><h3>Peringkat faktor</h3><div class="table-wrap" style="max-height:420px"><table class="table-x" id="piTable"></table></div></div></div>
+      <div class="small text-muted2 mt-2">Biru = beban jam-jam sebelumnya, ungu = kalender, oranye = cuaca. Ukuran ini hanya berlaku untuk XGBoost.</div>
     </div>
   </div>
 </section>
 
-<!-- ======================= 5. EXPLANATION ======================= -->
-<section class="page" id="page-explanation">
-  <div class="page-head"><div class="eyebrow">Halaman 5</div><h1>Model Explanation</h1><p>Cara kerja setiap model secara ringkas, tanpa harus membaca seluruh notebook penelitian.</p></div>
-  <ul class="nav nav-pills mb-3 gap-2" id="exTabs">
-    <li class="nav-item"><button class="nav-link active" data-tab="ew">A · Weather models</button></li>
-    <li class="nav-item"><button class="nav-link" data-tab="el">B · Load models</button></li>
-    <li class="nav-item"><button class="nav-link" data-tab="ec">Perbandingan</button></li>
-  </ul>
-  <div class="etab" id="tab-ew">
-    <div class="row g-3">
-      <div class="col-lg-6"><div class="card-x model-card">
-        <h3>SARIMAX</h3><div class="sub">Seasonal ARIMA with eXogenous regressors</div>
-        <div class="formula">$$\phi_p(B)\,\Phi_P(B^s)\,(1-B)^d(1-B^s)^D\,y_t=\beta^\top x_t+\theta_q(B)\,\Theta_Q(B^s)\,\varepsilon_t$$</div>
-        <div class="accordion" id="accSar">
-          <div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#s1">Komponen AR, I, MA</button></h2>
-            <div id="s1" class="accordion-collapse collapse show" data-bs-parent="#accSar"><div class="accordion-body"><b>AR(p)</b>: nilai sekarang dipengaruhi p nilai sebelumnya. <b>I(d)</b>: differencing d kali agar deret stasioner. <b>MA(q)</b>: dipengaruhi q galat (shock) sebelumnya. Notasi \(B\) adalah operator backshift: \(B y_t = y_{t-1}\).</div></div></div>
-          <div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#s2">Komponen musiman & eksogen</button></h2>
-            <div id="s2" class="accordion-collapse collapse" data-bs-parent="#accSar"><div class="accordion-body">\((P,D,Q)_s\) adalah versi musiman dengan periode \(s\) (di sini \(s=24\) jam). Variabel eksogen \(x_t\) (Fourier mingguan, libur, sekolah, dan cuaca untuk model beban) masuk sebagai regresi; galatnya dimodelkan SARIMA.</div></div></div>
-          <div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#s3">Cara kerja forecasting</button></h2>
-            <div id="s3" class="accordion-collapse collapse" data-bs-parent="#accSar"><div class="accordion-body">Parameter diestimasi dengan maximum likelihood (filter Kalman). Ramalan 24 jam dihasilkan <b>rekursif</b>: ramalan jam ke-h memakai ramalan jam-jam sebelumnya.</div></div></div>
-        </div>
-        <div class="row mt-2"><div class="col-6"><b class="small">Kelebihan</b><ul class="pros"><li>Interpretable</li><li>Parsimoni</li><li>Interval teoretis</li></ul></div>
-          <div class="col-6"><b class="small">Keterbatasan</b><ul class="cons"><li>Hubungan linear</li><li>Berat untuk data per jam panjang</li><li>Galat menumpuk di horizon jauh</li></ul></div></div>
-      </div></div>
-      <div class="col-lg-6"><div class="card-x model-card x">
-        <h3>XGBoost</h3><div class="sub">eXtreme Gradient Boosting · decision tree ensemble</div>
-        <div class="formula">$$\hat y^{(m)}=\hat y^{(m-1)}+\eta\,f_m(x),\qquad f_m=\arg\min_f\sum_i \ell\big(y_i,\hat y_i^{(m-1)}+f(x_i)\big)+\Omega(f)$$</div>
-        <svg class="boost-svg w-100" viewBox="0 0 520 120" aria-label="Diagram boosting">
-          <g id="boostDiag"></g>
-        </svg>
-        <ul>
-          <li><b>Residual learning:</b> setiap pohon baru belajar memperbaiki galat (gradien) gabungan pohon sebelumnya.</li>
-          <li><b>Lag features:</b> nilai deret pada jam-jam sebelumnya (mis. 1, 2, 3, 24, 168 jam).</li>
-          <li><b>Rolling statistics:</b> rata-rata/simpangan pada jendela bergerak (dipilih dengan validasi).</li>
-          <li><b>Feature importance:</b> kontribusi tiap fitur (gain / SHAP), lihat Halaman 4-D.</li>
-          <li><b>Direct multi-step:</b> 24 model terpisah, satu per horizon, sehingga galat tidak menumpuk.</li>
-        </ul>
-      </div></div>
-    </div>
+<!-- ======================= CARA KERJA ======================= -->
+<section class="page" id="page-cara-kerja">
+  <div class="page-head"><h1>Cara Kerja Model</h1><p>Penjelasan singkat tiga model yang dipakai.</p></div>
+  <div class="row g-3">
+    <div class="col-lg-4"><div class="card-x model-card">
+      <h3>SARIMAX</h3><div class="sub">Model statistik klasik untuk data berpola musiman</div>
+      <p class="small">Memprediksi nilai berikutnya dari nilai-nilai sebelumnya, pola yang berulang setiap 24 jam, dan faktor luar seperti hari libur atau cuaca.</p>
+      <div class="formula small">$$\text{SARIMAX}(p,d,q)(P,D,Q)_{s}$$</div>
+      <ul class="small"><li><b>AR (p):</b> pengaruh nilai jam-jam sebelumnya.</li><li><b>I (d):</b> menghilangkan tren agar data stabil.</li><li><b>MA (q):</b> pengaruh kesalahan prediksi sebelumnya.</li>
+        <li><b>Musiman (P,D,Q)<sub>s</sub>:</b> pola yang berulang tiap s = 24 jam.</li><li><b>X:</b> faktor luar (hari libur, sekolah, cuaca).</li></ul>
+      <div class="small">Model beban memakai orde <b class="mono" data-bind="sarOrder">–</b>.</div>
+      <div class="row mt-2 small"><div class="col-6"><b>Kelebihan</b><ul class="pros"><li>Mudah ditafsirkan</li><li>Ringan</li></ul></div><div class="col-6"><b>Kekurangan</b><ul class="cons"><li>Hanya hubungan lurus (linear)</li><li>Kurang tepat untuk jam jauh</li></ul></div></div>
+    </div></div>
+    <div class="col-lg-4"><div class="card-x model-card x">
+      <h3>XGBoost</h3><div class="sub">Machine learning berbasis kumpulan pohon keputusan</div>
+      <p class="small">Membangun ratusan pohon keputusan secara bertahap. Setiap pohon baru belajar memperbaiki kesalahan pohon-pohon sebelumnya.</p>
+      <svg class="boost-svg w-100" viewBox="0 0 520 120" aria-label="Diagram boosting"><g id="boostDiag"></g></svg>
+      <ul class="small"><li><b>Beban sebelumnya:</b> 1, 2, 3, ... hingga 168 jam (seminggu) lalu.</li><li><b>Kalender:</b> jam, hari, bulan, libur, masa sekolah.</li><li><b>Cuaca:</b> prediksi cuaca untuk jam yang diramal.</li><li>Ada <b>24 model terpisah</b>, satu untuk tiap jam ke depan.</li></ul>
+      <div class="row mt-2 small"><div class="col-6"><b>Kelebihan</b><ul class="pros"><li>Menangkap pola rumit</li><li>Cepat</li></ul></div><div class="col-6"><b>Kekurangan</b><ul class="cons"><li>Kesulitan jika data keluar dari pola masa lalu</li></ul></div></div>
+    </div></div>
+    <div class="col-lg-4"><div class="card-x model-card t">
+      <h3>TimesFM 3.0</h3><div class="sub">Foundation model deret waktu dari Google</div>
+      <p class="small">Model AI besar yang sudah dilatih pada banyak sekali data deret waktu dari berbagai bidang. Model ini langsung dipakai untuk data Panama <b>tanpa dilatih ulang</b> (zero-shot).</p>
+      <ul class="small"><li><b>Input:</b> <b data-bind="ctxL">–</b> jam terakhir beban listrik.</li><li><b>Output:</b> prediksi 24 jam ke depan beserta rentang perkiraannya.</li></ul>
+      <div id="chCtx" class="chart sm skeleton" style="min-height:210px"></div>
+      <div class="small text-muted2">Makin panjang riwayat yang dibaca, makin kecil MAE pada data 2019.</div>
+    </div></div>
   </div>
-  <div class="etab d-none" id="tab-el">
-    <div class="row g-3">
-      <div class="col-lg-4"><div class="card-x model-card">
-        <h3>SARIMAX untuk beban</h3>
-        <ul><li>Historis beban dengan differencing \((1-B)(1-B^{24})\).</li><li>Orde terpilih: <b class="mono" data-bind="sarOrder">–</b>.</li><li>Pola mingguan via Fourier \(K=4\) + libur + sekolah.</li><li>Skenario B/C: menambah regresor cuaca pada \(x_t\).</li></ul>
-      </div></div>
-      <div class="col-lg-4"><div class="card-x model-card x">
-        <h3>XGBoost untuk beban</h3>
-        <div class="formula">$$\hat y_{t+h}=f_h\big(y_t..y_{t-167},\,y_{t+h-24},\,y_{t+h-168},\,\text{kalender}_{t+h},\,\text{cuaca}_{t+h}\big)$$</div>
-        <ul><li>24 model direct (h = 1..24).</li><li>Lag beban terakhir + lag “jam yang sama” kemarin & minggu lalu.</li><li>Kalender pada waktu target (jam, hari, musim, libur, sekolah).</li><li>Cuaca pada waktu target: aktual saat training, <b>ramalan BAB I</b> saat operasional.</li></ul>
-      </div></div>
-      <div class="col-lg-4"><div class="card-x model-card t">
-        <h3>TimesFM 3.0</h3>
-        <ul><li><b>Time Series Foundation Model</b> dari Google (decoder-only transformer).</li><li><b>Pretraining</b> pada korpus deret waktu publik berukuran sangat besar.</li><li><b>Zero-shot:</b> tidak dilatih ulang pada data Panama.</li><li><b>Context window:</b> <b data-bind="ctxL">–</b> jam terakhir sebagai input.</li><li><b>Horizon:</b> 24 jam, keluaran median + kuantil 0,1–0,9.</li></ul>
-        <div id="chCtx" class="chart sm skeleton" style="min-height:220px"></div>
-      </div></div>
-    </div>
-    <div class="card-x mt-3"><h3>Context window vs horizon</h3><div class="sub">Geser untuk melihat berapa banyak riwayat yang “dibaca” TimesFM sebelum meramal 24 jam.</div>
-      <input type="range" class="form-range" id="ctxSlider" min="0" max="2" step="1" value="2"><div id="chCtxDemo" class="chart sm"></div></div>
-  </div>
-  <div class="etab d-none" id="tab-ec">
-    <div class="card-x"><div class="table-wrap"><table class="table-x" id="cmpTable"></table></div>
-      <div class="small text-muted2 mt-2">Angka MAE diambil dari tabel evaluasi BAB II (skenario B, operasional dengan cuaca).</div></div>
-  </div>
+  <div class="card-x mt-3"><h3>Berapa banyak riwayat yang dibaca TimesFM?</h3><div class="sub">Geser untuk membandingkan panjang riwayat (bagian berwarna ungu).</div>
+    <input type="range" class="form-range" id="ctxSlider" min="0" max="2" step="1" value="2"><div id="chCtxDemo" class="chart sm"></div></div>
+  <div class="section-title">Ringkasan perbandingan</div>
+  <div class="card-x"><div class="table-wrap"><table class="table-x" id="cmpTable"></table></div>
+    <div class="small text-muted2 mt-2">Semua angka dari percobaan dengan prediksi cuaca.</div></div>
 </section>
 
-<!-- ======================= 6. FORECAST ======================= -->
-<section class="page" id="page-forecast">
-  <div class="page-head"><div class="eyebrow">Halaman 6 · Fitur utama</div><h1>Electricity Load Forecasting</h1><p>Prediksi beban listrik nasional Panama untuk 24 jam setelah data historis terakhir.</p></div>
+<!-- ======================= PREDIKSI ======================= -->
+<section class="page" id="page-prediksi">
+  <div class="page-head"><h1>Prediksi 24 Jam</h1><p>Perkiraan beban listrik nasional Panama untuk 24 jam setelah data terakhir.</p></div>
   <div class="row g-3" id="fcOverview"></div>
-  <div class="section-title">Kontrol forecast</div>
-  <div class="card-x">
+  <div class="card-x mt-3">
     <div class="controls">
       <div><label>Model</label><select class="form-select form-select-sm" id="fcModel"><option>TimesFM</option><option>XGBoost</option><option>SARIMAX</option></select></div>
-      <div><label>Skenario cuaca</label><select class="form-select form-select-sm" id="fcSc"><option value="A">A · tanpa cuaca</option><option value="B">B · ramalan cuaca BAB I</option></select></div>
-      <div><label>Riwayat</label><select class="form-select form-select-sm" id="fcHist"><option value="48">2 hari</option><option value="168" selected>7 hari</option><option value="336">14 hari</option></select></div>
-      <div class="form-check form-switch ms-2 mb-1"><input class="form-check-input" type="checkbox" id="fcCI" checked><label class="form-check-label small" for="fcCI">Interval 80%</label></div>
+      <div><label>Informasi cuaca</label><select class="form-select form-select-sm" id="fcSc"><option value="A">Tanpa cuaca</option><option value="B">Dengan prediksi cuaca</option></select></div>
+      <div><label>Riwayat ditampilkan</label><select class="form-select form-select-sm" id="fcHist"><option value="48">2 hari</option><option value="168" selected>7 hari</option><option value="336">14 hari</option></select></div>
+      <div class="form-check form-switch ms-2 mb-1"><input class="form-check-input" type="checkbox" id="fcCI" checked><label class="form-check-label small" for="fcCI">Rentang perkiraan 80%</label></div>
       <div class="form-check form-switch mb-1"><input class="form-check-input" type="checkbox" id="fcAll"><label class="form-check-label small" for="fcAll">Bandingkan semua model</label></div>
     </div>
     <div class="row g-3" id="fcKpi"></div>
     <div id="chFc" class="chart lg skeleton mt-2"></div>
     <div class="small text-muted2" id="fcNote"></div>
   </div>
-  <div class="section-title">Forecast table</div>
+  <div class="section-title">Tabel prediksi</div>
   <div class="card-x"><div class="d-flex justify-content-end mb-2"><button class="btn btn-sm btn-ghost" id="fcCsv"><i class="bi bi-download"></i> Unduh CSV</button></div>
     <div class="table-wrap"><table class="table-x" id="fcTable"></table></div></div>
+
+  <div class="section-title" id="coba">Coba prediksi dengan data Anda</div>
+  <p class="section-desc">Prediksi dijalankan langsung di browser Anda memakai model XGBoost hasil penelitian ini (tanpa informasi cuaca). TimesFM terlalu besar untuk dijalankan di browser.</p>
+  <div class="row g-3">
+    <div class="col-lg-5"><div class="card-x">
+      <ol class="steps">
+        <li><b>Siapkan data beban</b><div class="small text-muted2 mb-2">File CSV dengan kolom <span class="mono">datetime</span> dan <span class="mono">nat_demand</span> (MWh), minimal 168 jam (7 hari) berurutan tanpa jam yang hilang.</div>
+          <div class="dropzone" id="dz"><i class="bi bi-cloud-arrow-up fs-3 text-info"></i><div class="small">Klik atau tarik file CSV ke sini</div><input type="file" id="fileIn" accept=".csv,text/csv" hidden></div>
+          <div class="d-flex gap-2 mt-2 flex-wrap"><button class="btn btn-sm btn-ghost" id="useSample"><i class="bi bi-database"></i> Pakai data contoh</button><button class="btn btn-sm btn-ghost" id="dlTemplate"><i class="bi bi-file-earmark-arrow-down"></i> Unduh template</button></div>
+          <div class="small mt-2" id="dataInfo"></div></li>
+        <li><b>Atur hari yang diprediksi</b>
+          <div class="form-check form-switch mt-1"><input class="form-check-input" type="checkbox" id="uHoliday"><label class="form-check-label small" for="uHoliday">Hari libur nasional</label></div>
+          <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="uSchool"><label class="form-check-label small" for="uSchool">Masa sekolah (bukan libur sekolah)</label></div></li>
+        <li><b>Jalankan</b><div class="small text-muted2 mb-2">Pertama kali, model (±4 MB) akan diunduh.</div>
+          <button class="btn btn-cyan" id="runUser" disabled><i class="bi bi-play-fill"></i> Jalankan prediksi</button>
+          <div class="progress mt-2 d-none" id="uProg"><div class="progress-bar" style="width:0%"></div></div></li>
+      </ol>
+    </div></div>
+    <div class="col-lg-7"><div class="card-x">
+      <div id="uResultEmpty" class="text-center text-muted2 py-5"><i class="bi bi-graph-up fs-1"></i><div>Hasil prediksi akan tampil di sini.</div></div>
+      <div id="uResult" class="d-none">
+        <div class="row g-2" id="uKpi"></div>
+        <div id="chUser" class="chart mt-2"></div>
+        <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2"><div class="small" id="uCheck"></div><button class="btn btn-sm btn-ghost" id="uCsv"><i class="bi bi-download"></i> Unduh hasil</button></div>
+      </div>
+    </div></div>
+  </div>
 </section>
 
-<!-- ======================= 7. SIMULATION ======================= -->
-<section class="page" id="page-simulation">
-  <div class="page-head"><div class="eyebrow">Halaman 7</div><h1>Weather Scenario Simulation</h1><p>Eksplorasi sensitivitas estimasi beban 24 jam terhadap perubahan suhu, kelembapan, dan kalender.</p></div>
-  <div class="callout mb-3"><i class="bi bi-info-circle"></i> <span id="simNote"></span></div>
+<!-- ======================= SIMULASI ======================= -->
+<section class="page" id="page-simulasi">
+  <div class="page-head"><h1>Simulasi Skenario</h1><p>Bagaimana perkiraan beban 24 jam berubah jika suhu, kelembapan, atau jenis harinya berbeda?</p></div>
+  <div class="callout info mb-3"><i class="bi bi-info-circle"></i> <span id="simNote"></span></div>
   <div class="row g-3">
     <div class="col-lg-4"><div class="card-x">
-      <h3><i class="bi bi-thermometer-half" style="color:var(--orange)"></i> A · Temperature scenario</h3>
-      <div class="d-flex justify-content-between small"><span>ΔT (semua wilayah)</span><b class="mono" id="vT">0.0 °C</b></div>
+      <h3><i class="bi bi-thermometer-half" style="color:var(--orange)"></i> Suhu</h3>
+      <div class="d-flex justify-content-between small"><span>Perubahan suhu di semua wilayah</span><b class="mono" id="vT">0.0 °C</b></div>
       <input type="range" class="form-range" id="sT" min="-3" max="3" step="0.5" value="0">
       <div class="d-flex flex-wrap gap-1 mb-3" id="qT"></div>
-      <h3><i class="bi bi-droplet-half text-info"></i> B · Humidity scenario</h3>
-      <div class="d-flex justify-content-between small"><span>ΔQV2M (relatif)</span><b class="mono" id="vQ">0 %</b></div>
+      <h3><i class="bi bi-droplet-half text-info"></i> Kelembapan</h3>
+      <div class="d-flex justify-content-between small"><span>Perubahan kelembapan</span><b class="mono" id="vQ">0 %</b></div>
       <input type="range" class="form-range" id="sQ" min="-10" max="10" step="5" value="0">
-      <h3 class="mt-3"><i class="bi bi-calendar-week text-info"></i> C · Calendar scenario</h3>
+      <h3 class="mt-3"><i class="bi bi-calendar-week text-info"></i> Jenis hari</h3>
       <select class="form-select form-select-sm mb-2" id="sCal">
-        <option value="actual">Sesuai kalender asli</option><option value="weekday">Hari kerja (diasumsikan Rabu)</option>
-        <option value="weekend">Weekend (diasumsikan Minggu)</option><option value="holiday">Holiday (hari libur nasional)</option></select>
-      <select class="form-select form-select-sm" id="sSchool"><option value="1">School day (masa sekolah)</option><option value="0">School holiday (libur sekolah)</option></select>
-      <div class="small text-muted2 mt-2">Indikator <i>school</i> mengikuti kolom dataset (1 = masa sekolah, 0 = libur sekolah).</div>
-      <button class="btn btn-sm btn-ghost mt-3" id="simReset"><i class="bi bi-arrow-counterclockwise"></i> Reset baseline</button>
+        <option value="actual">Sesuai kalender (Sabtu)</option><option value="weekday">Hari kerja</option>
+        <option value="weekend">Akhir pekan (Minggu)</option><option value="holiday">Hari libur nasional</option></select>
+      <select class="form-select form-select-sm" id="sSchool"><option value="1">Masa sekolah</option><option value="0">Libur sekolah</option></select>
+      <button class="btn btn-sm btn-ghost mt-3" id="simReset"><i class="bi bi-arrow-counterclockwise"></i> Kembali ke kondisi awal</button>
     </div></div>
     <div class="col-lg-8">
       <div class="row g-3" id="simKpi"></div>
-      <div class="card-x mt-3"><h3>Baseline vs scenario</h3><div id="chSim" class="chart skeleton"></div>
-        <div class="formula small mt-2" id="simFormula">$$\Delta Load=Load_{scenario}-Load_{baseline},\qquad \%\Delta Load=\frac{Load_{scenario}-Load_{baseline}}{Load_{baseline}}\times 100\%$$</div></div>
+      <div class="card-x mt-3"><h3>Kondisi awal vs skenario</h3><div id="chSim" class="chart skeleton"></div></div>
     </div>
   </div>
 </section>
 </main>
+<footer>PANAMA POWER ANALYTICS · Electricity Demand & Weather Forecasting Dashboard (2015–2020) · Data diperbarui <span id="genTime">–</span></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="assets/js/xgb.js"></script>
 <script src="assets/js/app.js"></script>
 </body>
 </html>

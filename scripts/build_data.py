@@ -310,6 +310,36 @@ sim = {"times": [t.strftime("%Y-%m-%d %H:%M") for t in FUT], "dT": DT, "dQ": DQ,
        "timesfm": np.asarray(FIN.get(("TimesFM", "A"), [])).ravel().tolist() if ("TimesFM", "A") in FIN else None}
 save("simulation", sim, 4)
 
+# ---------------------------------------------------------------- ekspor XGBoost-A final untuk prediksi di browser
+import gzip
+CONDS, LEFTS, FEATS, META_H = [], [], [], {}
+MA = models["XGB_A"]
+for h in range(1, H + 1):
+    m = json.loads(MA["models"][h].get_booster().save_raw("json").decode())
+    bs = m["learner"]["learner_model_param"]["base_score"]
+    base = float(json.loads(bs)[0]) if bs.strip().startswith("[") else float(bs)
+    sizes = []
+    for t in m["learner"]["gradient_booster"]["model"]["trees"]:
+        L_, R_ = np.array(t["left_children"]), np.array(t["right_children"])
+        inner = L_ >= 0
+        assert (R_[inner] == L_[inner] + 1).all(), "asumsi right = left + 1 tidak berlaku"
+        si = np.array(t["split_indices"]); assert si.max() < 128
+        CONDS.append(np.array(t["split_conditions"], dtype=np.float32)); LEFTS.append(L_.astype(np.int16))
+        FEATS.append((si | (np.array(t["default_left"]) > 0) * 128).astype(np.uint8)); sizes.append(len(L_))
+    META_H[str(h)] = {"base": base, "sizes": sizes}
+CONDS, LEFTS, FEATS = np.concatenate(CONDS), np.concatenate(LEFTS), np.concatenate(FEATS)
+(OUT / "xgb_model.bin.gz").write_bytes(gzip.compress(CONDS.tobytes() + LEFTS.tobytes() + FEATS.tobytes(), 9))
+print(f"  xgb_model.bin.gz  {(OUT / 'xgb_model.bin.gz').stat().st_size / 1024:.0f} KB · node {len(CONDS):,}")
+xg = {"features": MA["models"][1].get_booster().feature_names, "lags": FEAT["lags"], "tgt_lags": FEAT["tgt_lags"],
+      "cal_cols": FEAT["cal_cols"], "stats": {str(h): MA["stats"][h] for h in range(1, H + 1)},
+      "n_nodes": int(len(CONDS)), "trees": META_H,
+      "check": {"origin": LAST_T.strftime("%Y-%m-%d %H:%M"),"pred": np.asarray(FIN[("XGBoost", "A")]).ravel().tolist(),
+                "holiday": 0, "school": SCHOOL_LAST}}
+assert all(MA["models"][h].get_booster().feature_names == xg["features"] for h in range(1, H + 1))
+p = OUT / "xgb_model.json"
+p.write_text(json.dumps(xg, separators=(",", ":")), encoding="utf-8")
+print(f"  xgb_model.json  {p.stat().st_size / 1024:.0f} KB")
+
 # ---------------------------------------------------------------- forecast 24 jam
 ff = pd.read_csv(DASH / "final_forecast_next24h.csv")
 hist = y.iloc[-24 * 14:]

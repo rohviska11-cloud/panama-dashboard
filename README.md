@@ -10,15 +10,21 @@ Semua angka di dashboard berasal dari hasil notebook penelitian. Dashboard **tid
 
 ## Halaman
 
-| # | Halaman | Isi |
-|---|---|---|
-| 1 | Overview | Hero, KPI dataset, alur penelitian, highlight model terbaik (dari evaluasi) |
-| 2 | Data Exploration | Time series interaktif (filter tahun/bulan/tanggal, zoom), pola jam/hari/bulan, heatmap, distribusi, insight otomatis |
-| 3 | Weather Analysis | Peta 3 wilayah, KPI cuaca, tren suhu, kelembapan/presipitasi/angin, scatter vs beban, korelasi Pearson/Spearman |
-| 4 | Model Performance | Performa cuaca (BAB I), performa beban per skenario A/B/C, pemilihan model, uji Diebold–Mariano, feature importance & SHAP XGBoost |
-| 5 | Model Explanation | SARIMAX, XGBoost, dan TimesFM: rumus, diagram, context window |
-| 6 | Load Forecasting | Ramalan 24 jam, interval 80%, kontrol model/skenario, tabel dan unduh CSV |
-| 7 | Scenario Simulation | Slider suhu dan kelembapan, skenario kalender, ΔLoad dan %ΔLoad |
+| Halaman | Isi |
+|---|---|
+| Beranda | Ringkasan data, alur penelitian, model terbaik (dari hasil evaluasi) |
+| Eksplorasi Data | Grafik beban interaktif, pola jam/hari/bulan, heatmap, distribusi, temuan otomatis |
+| Cuaca | Peta 3 wilayah, suhu, kelembapan, hujan, angin, hubungan dengan beban, korelasi |
+| Performa Model | Ketepatan prediksi beban dan cuaca, model terbaik, uji Diebold–Mariano, faktor penting XGBoost |
+| Cara Kerja Model | Penjelasan singkat SARIMAX, XGBoost, TimesFM |
+| Prediksi 24 Jam | Prediksi 24 jam + rentang 80%, unduh CSV, dan **prediksi dari data pengguna** (XGBoost berjalan di browser) |
+| Simulasi | Ubah suhu, kelembapan, dan jenis hari, lalu lihat perubahan prediksi |
+
+**Prediksi di browser.** Prediksi dari data pengguna memakai 24 model XGBoost tanpa cuaca hasil penelitian.
+- Model diekspor ke `data/xgb_model.json` dan `data/xgb_model.bin.gz` (±4 MB).
+- Perhitungannya ada di `assets/js/xgb.js`.
+- Dengan data contoh, hasilnya identik dengan perhitungan Python (selisih 0,000 MWh).
+- TimesFM tidak dapat dijalankan di browser karena terlalu besar (331 juta parameter).
 
 ## Struktur repo
 
