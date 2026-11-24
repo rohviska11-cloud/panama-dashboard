@@ -5,6 +5,7 @@ folder proyek (../outputs dan ../data), merangkum, lalu menulis JSON ke ./data.
 Satu-satunya komputasi model adalah simulasi skenario dan SHAP, keduanya memakai model
 XGBoost final yang sudah dilatih di BAB II (cache 13_final_alldata), tanpa fitting ulang.
 
+
 Jalankan dari folder repo:  python scripts/build_data.py
 """
 import json, sys, datetime as dt
